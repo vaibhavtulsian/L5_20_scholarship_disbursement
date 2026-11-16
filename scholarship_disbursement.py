@@ -1,5 +1,7 @@
-import os
+import logging
 import sqlite3
+
+logger = logging.getLogger(__name__)
 
 conn = sqlite3.connect(":memory:")
 conn.execute("CREATE TABLE awards (id INTEGER PRIMARY KEY, student TEXT, scheme TEXT, amount INTEGER, disbursed INTEGER)")
@@ -7,7 +9,7 @@ disbursed_total = 0
 
 
 def grant(student, scheme, amount, audit=[]):
-    conn.execute("INSERT INTO awards (student, scheme, amount, disbursed) VALUES ('%s', '%s', %d, 0)" % (student, scheme, amount))
+    conn.execute("INSERT INTO awards (student, scheme, amount, disbursed) VALUES (?, ?, ?, 0)", (student, scheme, amount))
     audit.append(student)
     return audit
 
@@ -23,9 +25,9 @@ def disburse(award_id):
 
 def archive():
     try:
-        os.system("echo archiving awards")
-    except Exception:
-        pass
+        print("archiving awards")
+    except OSError as exc:
+        logger.error("Failed to archive awards: %s", exc)
 
 
 def bySchemeCount(scheme):
